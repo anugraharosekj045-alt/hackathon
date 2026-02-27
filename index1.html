@@ -1,0 +1,295 @@
+ <!DOCTYPE html>
+<html>
+<head>
+    <title>Women Empowerment Quiz</title>
+
+    <!-- Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            text-align: center;
+            padding: 30px;
+            margin: 0;
+        }
+
+        .quiz-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            width: 60%;
+            margin: auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 10px;
+            background: #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        #progressBar {
+            height: 10px;
+            width: 0%;
+            background: #4CAF50;
+            border-radius: 5px;
+        }
+
+        /* Level Badge */
+        .badge {
+            padding: 6px 15px;
+            border-radius: 20px;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        .easy { background: #4CAF50; }
+        .medium { background: #ff9800; }
+        .hard { background: #f44336; }
+
+        /* Buttons */
+        button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            outline: none;
+        }
+
+        button:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .option {
+            background-color: #f2f2f2;
+            color: black;
+        }
+
+        .option:hover {
+            background-color: #ddd;
+        }
+
+        .correct {
+            background-color: #4CAF50 !important;
+            color: white !important;
+        }
+
+        .wrong {
+            background-color: #f44336 !important;
+            color: white !important;
+        }
+
+        #nextBtn {
+            background: #2196F3;
+            color: white;
+            display: none;
+        }
+
+        /* Result Screen */
+        #resultScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #resultScreen h2 {
+            font-size: 48px;
+        }
+
+        #resultScreen h3 {
+            font-size: 28px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="quiz-container" id="quizBox">
+
+    <h1>👩‍💻 Women Empowerment Quiz</h1>
+
+    <div class="progress-container">
+        <div id="progressBar"></div>
+    </div>
+
+    <div id="levelBadge" class="badge"></div>
+
+    <div id="timer">Time Left: 15s</div>
+
+    <h2 id="question"></h2>
+
+    <div id="options"></div>
+
+    <button id="nextBtn">Next</button>
+
+</div>
+
+<!-- Result Screen -->
+<div id="resultScreen">
+    <h2>Quiz Completed 🎉</h2>
+    <h3 id="finalScore"></h3>
+    <button onclick="restartQuiz()">Restart</button>
+</div>
+
+<!-- Sound Effects -->
+<audio id="correctSound" src="correct.mp3"></audio>
+<audio id="wrongSound" src="wrong.mp3"></audio>
+<audio id="clickSound" src="click.mp3"></audio>
+
+<script>
+
+const questions = [
+    {level:"Easy",question:"First woman PM of India?",options:["Indira Gandhi","Sarojini Naidu","Pratibha Patil","Sonia Gandhi"],answer:0},
+    {level:"Easy",question:"International Women's Day?",options:["March 8","Jan 26","Aug 15","April 10"],answer:0},
+    {level:"Easy",question:"Missile Woman of India?",options:["Kalpana Chawla","Tessy Thomas","Mary Kom","Sudha Murty"],answer:1},
+    {level:"Easy",question:"Founder of Nykaa?",options:["Falguni Nayar","Indra Nooyi","Kiran Mazumdar","Sudha Murty"],answer:0},
+    {level:"Easy",question:"First Indian woman in space?",options:["Kalpana Chawla","Sunita Williams","Ritu Karidhal","Tessy Thomas"],answer:0},
+
+    {level:"Medium",question:"Founder of Girls Who Code?",options:["Reshma Saujani","Whitney Wolfe","Sara Blakely","Melinda Gates"],answer:0},
+    {level:"Medium",question:"CEO of YouTube (2023)?",options:["Susan Wojcicki","Neal Mohan","Sundar Pichai","Satya Nadella"],answer:1},
+    {level:"Medium",question:"India’s first female IPS officer?",options:["Kiran Bedi","Indira Gandhi","Mary Kom","Sushma Swaraj"],answer:0},
+    {level:"Medium",question:"Co-founder of Bumble?",options:["Whitney Wolfe Herd","Oprah Winfrey","Sheryl Sandberg","Rihanna"],answer:0},
+    {level:"Medium",question:"Head of IMF?",options:["Kristalina Georgieva","Janet Yellen","Ngozi Okonjo","Ursula Leyen"],answer:0},
+
+    {level:"Hard",question:"First woman Nobel Prize winner?",options:["Marie Curie","Mother Teresa","Malala","Rosalind Franklin"],answer:0},
+    {level:"Hard",question:"Founder of Biocon?",options:["Kiran Mazumdar Shaw","Indra Nooyi","Falguni Nayar","Sudha Murty"],answer:0},
+    {level:"Hard",question:"First female fighter pilot of India?",options:["Avani Chaturvedi","Gunjan Saxena","Mohana Singh","Bhavana Kanth"],answer:0},
+    {level:"Hard",question:"First woman Chief Justice of India?",options:["None yet","Indu Malhotra","Ruma Pal","Leila Seth"],answer:0},
+    {level:"Hard",question:"Inventor of first compiler?",options:["Grace Hopper","Ada Lovelace","Radia Perlman","Fei Fei Li"],answer:0}
+];
+
+let currentQuestion = 0;
+let score = 0;
+let timer;
+let timeLeft = 15;
+
+const correctSound = document.getElementById("correctSound");
+const wrongSound = document.getElementById("wrongSound");
+const clickSound = document.getElementById("clickSound");
+
+function startTimer(){
+    timeLeft = 15;
+    document.getElementById("timer").innerText = "Time Left: " + timeLeft + "s";
+    timer = setInterval(()=>{
+        timeLeft--;
+        document.getElementById("timer").innerText = "Time Left: " + timeLeft + "s";
+        if(timeLeft === 0){
+            clearInterval(timer);
+            revealAnswer();
+        }
+    },1000);
+}
+
+function loadQuestion(){
+    clearInterval(timer);
+    startTimer();
+    document.getElementById("nextBtn").style.display="none";
+
+    const q = questions[currentQuestion];
+    document.getElementById("question").innerText = q.question;
+
+    const badge = document.getElementById("levelBadge");
+    badge.innerText = q.level;
+    badge.className = "badge " + q.level.toLowerCase();
+
+    document.getElementById("progressBar").style.width =
+        (currentQuestion / questions.length)*100 + "%";
+
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    q.options.forEach((opt,index)=>{
+        const btn = document.createElement("button");
+        btn.innerText = opt;
+        btn.classList.add("option");
+        btn.onclick = ()=>selectOption(index);
+        optionsDiv.appendChild(btn);
+    });
+}
+
+function selectOption(index){
+    clickSound.play();
+    const options = document.querySelectorAll(".option");
+    options.forEach((btn,i)=>{
+        btn.disabled=true;
+        if(i===questions[currentQuestion].answer){
+            btn.classList.add("correct");
+        }
+        if(i===index && i!==questions[currentQuestion].answer){
+            btn.classList.add("wrong");
+        }
+    });
+
+    if(index===questions[currentQuestion].answer){
+        correctSound.play();
+        score++;
+    } else {
+        wrongSound.play();
+    }
+
+    clearInterval(timer);
+    document.getElementById("nextBtn").style.display="block";
+}
+
+function revealAnswer(){
+    const options = document.querySelectorAll(".option");
+    options.forEach((btn,i)=>{
+        btn.disabled=true;
+        if(i===questions[currentQuestion].answer){
+            btn.classList.add("correct");
+        }
+    });
+    document.getElementById("nextBtn").style.display="block";
+}
+
+document.getElementById("nextBtn").onclick=function(){
+    currentQuestion++;
+    if(currentQuestion<questions.length){
+        loadQuestion();
+    } else {
+        document.getElementById("quizBox").style.display="none";
+        document.getElementById("resultScreen").style.display="flex";
+        document.getElementById("finalScore").innerText =
+            "Your Score: " + score + " / " + questions.length;
+
+        confetti({
+            particleCount: 250,
+            spread: 120,
+            origin: { y: 0.6 }
+        });
+    }
+};
+
+function restartQuiz(){
+    currentQuestion=0;
+    score=0;
+    document.getElementById("quizBox").style.display="block";
+    document.getElementById("resultScreen").style.display="none";
+    loadQuestion();
+}
+
+loadQuestion();
+
+</script>
+
+</body>
+</html>
